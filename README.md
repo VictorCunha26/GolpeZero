@@ -1,96 +1,75 @@
-<h1 align="center">GolpeZero</h1>
+# GolpeZero
 
-<p align="center">
-  <img src="https://img.shields.io/badge/IA-Detecção_de_Fraudes-6A1B9A?style=for-the-badge" alt="IA">
-  <img src="https://img.shields.io/badge/Segurança-Pix-00A86B?style=for-the-badge" alt="Pix">
-  <img src="https://img.shields.io/badge/Status-MVP-F5A623?style=for-the-badge" alt="Status">
-</p>
+Assistente em português brasileiro para entender sinais de risco em mensagens, links e capturas de tela. A experiência tem três telas: análise, resultado e orientações. Cada resultado explica os sinais observados e indica ações que a pessoa pode tomar. O resultado sempre informa que a análise não confirma com certeza se o conteúdo é golpe.
 
-<p align="center">
-  <b>Plataforma de proteção contra golpes digitais com Inteligência Artificial, focada em interromper a fraude antes que a vítima perca dinheiro.</b>
-</p>
+## Rodar localmente
 
----
+Use Node.js 22 ou 24 e npm.
 
-## Sobre o projeto
-
-O **GolpeZero** é um sistema de prevenção a golpes que analisa mensagens, prints, áudios e links para identificar sinais de fraude e técnicas de manipulação psicológica.
-
-Diferente de soluções que apenas classificam um conteúdo como suspeito, o GolpeZero atua em todo o ciclo do golpe: **detecta** o risco, **confirma** a identidade de quem está pedindo dinheiro, **orienta** o usuário antes de uma transferência e, caso a fraude já tenha ocorrido, **indica os passos** para tentar recuperar o valor.
-
-## O problema
-
-Golpes como o do **falso familiar** exploram urgência, emoção e confiança. A vítima recebe uma mensagem de um número desconhecido, alguém se passa por um parente e pede uma transferência imediata via Pix. Quando a fraude é percebida, o dinheiro já foi enviado.
-
-## A solução
-
-O GolpeZero se posiciona **entre a mensagem e a transferência**, criando pontos de verificação que quebram o padrão de urgência usado pelos golpistas.
-
-```mermaid
-flowchart LR
-    A[Mensagem suspeita] --> B[Detector de Golpes com IA]
-    B --> C{Risco identificado?}
-    C -- Sim --> D[Verificação de Identidade]
-    D --> E[Escudo Pix]
-    E --> F[Transferência bloqueada ou confirmada]
-    C -- Não --> G[Conteúdo liberado]
-    F -. Golpe já aplicado .-> H[Modo Resgate]
+```sh
+npm ci
+npm run dev
 ```
 
-## Funcionalidades
+Abra `http://localhost:3000`. Para validar a instalação e o modo sem internet, use `npm run build` seguido de `npm start`.
 
-### Detector de Golpes com IA
+## Configurar análise real
 
-Analisa diferentes formatos de conteúdo recebidos pelo usuário:
+Copie `.env.example` para `.env.local` e preencha `OPENAI_API_KEY` com uma chave válida. O modelo padrão é `gpt-4.1-mini`. Se configurar `OPENAI_MODEL`, escolha um modelo que aceite imagens e Structured Outputs via Chat Completions. A variável é lida somente no servidor.
 
-| Entrada   | O que é analisado                                              |
-|-----------|----------------------------------------------------------------|
-| Mensagens | Padrões de texto, pedidos de dinheiro e senso de urgência       |
-| Prints    | Conteúdo de capturas de tela de conversas                       |
-| Áudios    | Falas com indícios de fraude ou pressão emocional               |
-| Links     | Endereços suspeitos e possíveis páginas fraudulentas            |
+- Mensagens: até 5.000 caracteres.
+- Endereços: HTTP ou HTTPS, até 2.048 caracteres. O endereço é enviado ao modelo como texto.
+- Capturas: JPG, PNG ou WebP, até 4 MB e 20 megapixels. O servidor decodifica a imagem e envia uma cópia reduzida e sem metadados para análise. Imagens animadas são recusadas.
+- A aplicação valida o resultado antes de mostrá-lo. Os próximos passos são selecionados de um catálogo em português. Nenhum percentual é exibido.
 
-Além dos sinais técnicos de fraude, o detector identifica **gatilhos de manipulação psicológica**, como urgência, medo, apelo emocional e pedido de sigilo.
-
-### Verificação de Identidade
-
-Quando alguém se passa por um familiar pedindo dinheiro, o sistema permite **confirmar a identidade por meio de um contato previamente cadastrado** pelo usuário, validando se o pedido é legítimo antes de qualquer ação.
-
-### Escudo Pix
-
-Orienta o usuário **antes de realizar uma transferência suspeita**, apresentando os riscos identificados e criando uma etapa de reflexão antes da confirmação do pagamento.
-
-### Modo Resgate
-
-Caso o usuário já tenha caído em um golpe, o sistema **explica como agir** para tentar recuperar o dinheiro, com orientações sobre os próximos passos.
-
-## Diferencial
-
-> O GolpeZero não apenas detecta golpes: ele ajuda a **interromper a fraude antes que a pessoa perca dinheiro**.
-
-| Soluções tradicionais           | GolpeZero                                          |
-|---------------------------------|----------------------------------------------------|
-| Classificam o conteúdo          | Classificam, verificam e orientam                   |
-| Atuam apenas na detecção        | Atuam antes, durante e depois da tentativa de golpe |
-| Não validam quem pede o dinheiro | Confirmam a identidade via contato cadastrado       |
+[Guia de respostas estruturadas da OpenAI](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat)
 
 ## Demonstração
 
-O cenário de apresentação simula um **golpe do falso familiar**:
+Sem chave, abra **Experimentar exemplos**. Os quatro exemplos têm respostas prontas e explicitamente marcadas como demonstração. O formulário continua disponível para avaliar a interface e a validação. O serviço informa quando não há análise real configurada.
 
-1. O usuário recebe uma mensagem de alguém se passando por um parente, pedindo uma transferência urgente.
-2. A IA analisa a mensagem e identifica os sinais de risco e de manipulação psicológica.
-3. O sistema aciona a verificação de identidade junto ao contato previamente cadastrado.
-4. A identidade não é confirmada e o Escudo Pix orienta o usuário a não realizar a transferência.
+1. Pedido de Pix. Observe a troca de número e a orientação para falar com o contato conhecido.
+2. Aviso de bloqueio. Observe a pressão para clicar e a indicação de confirmar por canal oficial.
+3. Prêmio com taxa. Observe o pedido de pagamento adiantado.
+4. Lembrete comum. Observe a avaliação de risco baixo e a ressalva de incerteza.
 
-## Potencial de expansão
+Com a chave configurada, os textos estão em `src/lib/demo.ts`. Use `tests/fixtures/print.png` para o caso sintético de imagem e `https://exemplo.invalid/regularizar` como endereço reservado para teste. Avaliações do provedor podem variar. Verifique se a explicação se apoia no conteúdo e as orientações fazem sentido para o caso.
 
-O projeto foi concebido como um MVP com potencial de integração junto a:
+Para o pitch, apresente o problema de decidir sob pressão. Abra o exemplo de Pix, mostre por que o resultado apareceu e navegue até a orientação. Ative o Modo Fácil e avance um passo por vez. Encerre com a frase do PDF: “O GolpeZero não decide por você. Ele traduz sinais de risco em uma orientação simples para que qualquer pessoa consiga agir com mais segurança.”
 
-- Bancos
-- Instituições financeiras
-- Outras instituições interessadas em proteger seus usuários contra fraudes
+## Testes
 
-## Status do projeto
+```sh
+npm test
+npm run build
+npm run typecheck
+npm run test:e2e
+```
 
-**MVP funcional** — desenvolvido para apresentação, com as funcionalidades de detecção, verificação de identidade, Escudo Pix e Modo Resgate.
+O teste de navegador inicia o build de produção na porta 3077. No Windows, usa o Edge quando disponível. Em outros sistemas, instale Chromium com `npx playwright install chromium`. Use `TEST_BROWSER_EXECUTABLE` para escolher um caminho explícito. `TEST_BASE_URL` aponta a suíte para outro ambiente em modo demonstração. Execute a suíte em uma instância recém-iniciada por causa do limite de solicitações.
+
+Os testes usam respostas sintéticas na simulação do provedor, fixtures reais de demonstração e o endpoint local para testar validação. Há verificações automatizadas do axe em cada tela. A síntese de voz depende do navegador, do sistema e das vozes disponíveis. Faça uma rodada manual com leitor de tela e um teste com uma pessoa que esteja usando o app pela primeira vez antes de considerar a avaliação de acessibilidade concluída.
+
+## Publicar na Vercel
+
+Importe o repositório ou execute `vercel` a partir da pasta do app. Use o preset **Next.js**, Node 24 e as configurações padrão de build. Configure `OPENAI_API_KEY` nas variáveis do projeto e faça um novo deploy. No celular, abra o endereço HTTPS, teste uma análise de cada tipo e instale o app pelo menu do navegador quando esse recurso estiver disponível. No Safari do iPhone, use **Compartilhar → Adicionar à Tela de Início**.
+
+O limite é de 12 requisições por minuto por origem estimada e por instância. Ele protege a demonstração e é reiniciado quando a função é reciclada. Para uso público com credenciais pagas, configure também orçamento do provedor e limite no perímetro da Vercel.
+
+## Privacidade
+
+As entradas existem na memória durante o uso e são apagadas da interface depois de um resultado bem-sucedido. O GolpeZero não tem banco de dados, contas ou histórico. Só a preferência do Modo Fácil fica no armazenamento local da sessão. O serviço não registra o corpo nem inclui dados privados na URL. A análise real transmite conteúdo à OpenAI usando `store: false`. A retenção do provedor segue a política aplicável à conta. O modo offline guarda somente a página estática que informa a falta de internet.
+
+[Controles e retenção de dados da API da OpenAI](https://developers.openai.com/api/docs/guides/your-data)
+
+## Resultados verificados em 26 de novembro de 2026
+
+- Build de produção e verificação TypeScript aprovados.
+- 7 testes unitários e 9 testes de navegador aprovados. Incluem os quatro exemplos, envio pelos três formatos, validação, falhas e cancelamento, teclado, toque a 320 px, ampliação simulada de 200%, auditoria automatizada axe nas três telas, áudio simulado, manifesto e navegação offline.
+- Verificação com chave fictícia confirmou sua ausência no HTML e em 11 arquivos públicos de build.
+- A publicação HTTPS em [golpezero.vercel.app](https://golpezero.vercel.app) está ativa em modo demonstração. O teste público em viewport móvel percorreu o exemplo de Pix, conferiu a resposta da API, os passos do Modo Fácil, o manifesto e o registro do service worker.
+- A integração multimodal foi testada com respostas simuladas. A verificação com a OpenAI depende de uma chave válida. Leitor de tela real, áudio no dispositivo, instalação em telefone físico e sessão com uma pessoa de primeira viagem ainda precisam de validação manual.
+
+## Visão original
+
+A [proposta original do projeto](docs/VISAO-ORIGINAL.md) descreve funcionalidades além do escopo desta versão do MVP.
